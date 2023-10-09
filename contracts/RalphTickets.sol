@@ -40,7 +40,7 @@ contract RalphTickets is VRFV2WrapperConsumerBase, Ownable, ReentrancyGuard {
         address winner;
     }
     uint256 public totalRounds;
-    Round[] public rounds;
+    mapping(uint256 => Round) public rounds;
     mapping(uint256 => uint256) reqIdToRoundId;
 
     event BuyTicket(uint256 roundId, address participant, uint256 number);
