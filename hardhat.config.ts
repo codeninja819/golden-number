@@ -7,16 +7,18 @@ dotenv.config();
 const config: HardhatUserConfig = {
   solidity: "0.8.19",
   networks: {
-    bsc: {
-      url: "https://binance.llamarpc.com"
+    mainnet: {
+      url: "https://eth.llamarpc.com",
+      accounts: [process.env.PRIVATE_KEY!],
     },
-    bscTestnet: {
-      url: "https://bsc-testnet.public.blastapi.io"
+    goerli: {
+      url: "https://eth-goerli.public.blastapi.io",
+      accounts: [process.env.PRIVATE_KEY!],
     }
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY
-  }
+    apiKey: process.env.ETHERSCAN_API_KEY,
+  },
 };
 
 export default config;
