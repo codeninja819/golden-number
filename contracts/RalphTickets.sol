@@ -16,7 +16,7 @@ contract RalphTickets is VRFV2WrapperConsumerBase, Ownable, ReentrancyGuard {
         address(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
     address private constant VRF2WRAPPER_ADDERSS =
         address(0x708701a1DfF4f478de54383E49a627eD4852C816);
-    uint32 private constant CALLBACK_GAS_LIMIT = 3000000;
+    uint32 private constant CALLBACK_GAS_LIMIT = 2_500_000;
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
 
     uint256 constant BET_PRICE = 0.02 ether;
@@ -50,6 +50,7 @@ contract RalphTickets is VRFV2WrapperConsumerBase, Ownable, ReentrancyGuard {
         address tokenAddress
     ) VRFV2WrapperConsumerBase(LINK_ADDRESS, VRF2WRAPPER_ADDERSS) {
         token = IERC20(tokenAddress);
+        IERC20(LINK_ADDRESS).approve(VRF2WRAPPER_ADDERSS, type(uint256).max);
     }
 
     function buyTicket(uint256 number) external payable {
