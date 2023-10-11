@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.9;
 
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
@@ -10,13 +10,14 @@ import "@chainlink/contracts/src/v0.8/vrf/VRFV2WrapperConsumerBase.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 contract RalphTickets is VRFV2WrapperConsumerBase, Ownable, ReentrancyGuard {
+    address public constant DEAD_ADDRESS = address(0xdead);
     address public constant UNISWAPV2_ROUTER02_ADDRESS =
         address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
     address private constant LINK_ADDRESS =
         address(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
     address private constant VRF2WRAPPER_ADDERSS =
         address(0x708701a1DfF4f478de54383E49a627eD4852C816);
-    uint32 private constant CALLBACK_GAS_LIMIT = 2_500_000;
+    uint32 private constant CALLBACK_GAS_LIMIT = 2_000_000;
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
 
     uint256 constant BET_PRICE = 0.02 ether;
@@ -50,12 +51,18 @@ contract RalphTickets is VRFV2WrapperConsumerBase, Ownable, ReentrancyGuard {
         address tokenAddress
     ) VRFV2WrapperConsumerBase(LINK_ADDRESS, VRF2WRAPPER_ADDERSS) {
         token = IERC20(tokenAddress);
-        IERC20(LINK_ADDRESS).approve(VRF2WRAPPER_ADDERSS, type(uint256).max);
+        require(
+            IERC20(LINK_ADDRESS).approve(
+                VRF2WRAPPER_ADDERSS,
+                type(uint256).max
+            ),
+            "Approve failed"
+        );
     }
 
     function buyTicket(uint256 number) external payable {
         Round storage round = rounds[totalRounds];
-        require(msg.value == BET_PRICE, "Price does not match.");
+        require(msg.value == BET_PRICE, "Price does not match");
         require(
             round.participants[number] == address(0),
             "The ticket is already sold"
@@ -94,14 +101,26 @@ contract RalphTickets is VRFV2WrapperConsumerBase, Ownable, ReentrancyGuard {
 
     function burnToken() internal {
         address WETH = router.WETH();
-        address[] memory path;
+        address[] memory path = new address[](2);
         path[0] = WETH;
         path[1] = address(token);
-        router.swapExactETHForTokens{value: TOKEN_BURN}(
-            0,
-            path,
-            address(0),
-            block.timestamp + 60 * 10
+        router.swapExactETHForTokensSupportingFeeOnTransferTokens{
+            value: TOKEN_BURN
+        }(0, path, DEAD_ADDRESS, block.timestamp + 15 minutes);
+    }
+
+    function withdrawEther() public onlyOwner {
+        (bool success, ) = payable(msg.sender).call{
+            value: address(this).balance
+        }("");
+        require(success, "Transfer failed");
+    }
+
+    function withdrawLink() public onlyOwner {
+        LinkTokenInterface link = LinkTokenInterface(LINK_ADDRESS);
+        require(
+            link.transfer(msg.sender, link.balanceOf(address(this))),
+            "Transfer failed"
         );
     }
 }

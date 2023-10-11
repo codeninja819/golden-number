@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const ralphTickets = await ethers.deployContract("RalphTickets", ["0xB2eadDC5A2EeBBb71e89B70d97ce4f441a4DEf12"]);
+  const ralphTickets = await ethers.deployContract("RalphTickets", ["0x487c738529bcda310af158264de0ebda332e7532"]);
 
   await ralphTickets.waitForDeployment();
 
