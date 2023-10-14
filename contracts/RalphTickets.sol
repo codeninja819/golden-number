@@ -123,4 +123,14 @@ contract RalphTickets is VRFV2WrapperConsumerBase, Ownable, ReentrancyGuard {
             "Transfer failed"
         );
     }
+
+    function getRoundParticipants(
+        uint256 roundId
+    ) external view returns (address[] memory participants) {
+        Round storage round = rounds[roundId];
+        participants = new address[](ROUND_SLOTS);
+        for (uint256 i = 0; i < ROUND_SLOTS; i++) {
+            participants[i] = round.participants[i];
+        }
+    }
 }
